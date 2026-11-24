@@ -50,7 +50,7 @@ MAX_EXPLANATION = 200
 logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s", level=logging.INFO
 )
-log = logging.getLogger("quiz-bot")
+log = logging.getLogger("matriq-bot")
 
 
 # ---------------------------------------------------------------- database

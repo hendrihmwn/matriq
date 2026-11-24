@@ -53,7 +53,7 @@ bot.py (always running) ── 08:00 send quiz polls ◄────┘
 ### Running
 Question generator (crontab, Mon–Fri 07:00). The topic is required, because a headless run cannot ask:
 ```cron
-0 7 * * 1-5 cd ~/quiz-bot && claude -p "/matriq-quiz topik: Linux networking" --allowedTools "Read,Write" >> logs/generate.log 2>&1
+0 7 * * 1-5 cd ~/matriq && claude -p "/matriq-quiz topik: Linux networking" --allowedTools "Read,Write" >> logs/generate.log 2>&1
 ```
 
 Bot (keep it running, e.g. with tmux/systemd):
