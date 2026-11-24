@@ -1,0 +1,18 @@
+# Secrets
+.env
+.claude/settings.local.json
+
+# Runtime data
+quiz.db
+logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+
+# Generated content (keep the folder)
+output/*
+!output/.gitkeep
