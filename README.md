@@ -53,7 +53,7 @@ bot.py (always running) ── 08:00 send quiz polls ◄────┘
 ### Running
 Question generator (crontab, Mon–Fri 07:00). The topic is required, because a headless run cannot ask:
 ```cron
-0 7 * * 1-5 cd ~/matriq && claude -p "/matriq-quiz topik: Linux networking" --allowedTools "Read,Write" >> logs/generate.log 2>&1
+0 7 * * 1-5 cd ~/matriq && claude -p "/matriq-quiz topik: Linux networking" --allowedTools "Read,Write,Agent" >> logs/generate.log 2>&1
 ```
 
 Bot (keep it running, e.g. with tmux/systemd):
@@ -69,7 +69,7 @@ claude -p "/matriq-material mode: telegram topic: Docker" \
 
 ### Quick test without waiting for the schedule
 ```bash
-claude -p "/matriq-quiz topik: Git" --allowedTools "Read,Write"
+claude -p "/matriq-quiz topik: Git" --allowedTools "Read,Write,Agent"
 python bot.py      # then type /quiz in the group
 ```
 

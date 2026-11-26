@@ -29,8 +29,24 @@ path, or a historical timeline) and say in the reply which framing you chose.
 **Language:** `id` → all content and UI labels in Bahasa Indonesia (technical terms may
 stay in English); `en` → everything in English.
 
-**Content source:** an attached/referenced document first (use only that document),
-otherwise a `docs/` folder if it has documents, otherwise your own knowledge.
+**Content source:** an attached/referenced document first (use only that document, including a
+path the user names), otherwise a `docs/` folder if it has documents (rules below), otherwise
+your own knowledge.
+
+**Choosing from `docs/`** (only when no document was named):
+- List the files. Skip hidden files and formats you cannot read (`.docx`, `.pptx`, `.xlsx`);
+  tell the user those need converting to PDF or Markdown.
+- Match the files to `topic:` by file name first. If the names do not settle it, read the start
+  of each candidate (the first page or about 50 lines).
+- One clear match: use it. Several matches: use all of them. No clear match: do not force a
+  document; use your own knowledge and say so in one line.
+- Live conversation and unclear (several unrelated candidates, or only a partial match): ask
+  which file to use before creating anything. Headless run: never ask; use the clear matches,
+  otherwise your own knowledge, and name what you used.
+- Content taken from `docs/` is based on those files only (same as a referenced document).
+  Read large PDFs in page ranges, only the parts relevant to the topic.
+- End the reply with one line naming the files used: `Sumber: docs/<file>`
+  (`lang: en`: `Source: docs/<file>`).
 
 ## Role and task
 Act as an expert instructional guide who breaks complex processes into clear sequential

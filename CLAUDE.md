@@ -16,6 +16,10 @@ as interactive pages (artifact/HTML) or sent to a Telegram group (daily quiz + l
 - The Telegram bot does not call any AI; it only reads `output/quiz-YYYY-MM-DD.json`.
 - Telegram questions are sent as **non-anonymous** quiz polls (so answers can be recorded).
 - Bot storage: SQLite (`quiz.db`).
+- Answer keys are verified blind by a different model (Agent tool or `claude -p --model`),
+  default on, `verify: off` to skip. Single-model re-solve is the fallback (e.g. claude.ai).
+- `matriq-code` verifies its answer keys by executing them in Node instead (reference solutions
+  vs tests, predict snippets vs expected output); `verify: off` to skip.
 
 ## Skills
 | Skill | Purpose |
@@ -30,22 +34,27 @@ as interactive pages (artifact/HTML) or sent to a Telegram group (daily quiz + l
 All skills: if the topic is missing, ask first (in headless runs: stop and report it).
 
 ## Structure
+- `.claude/commands/matriq-help.md` — `/matriq-help [skill|level|lang|verify|examples]`: help command
+  (a slash command, not a skill; prints a cheat sheet, creates no files)
 - `bot.py` — Telegram bot (python-telegram-bot v21, JobQueue sends at 08:00 Mon–Fri,
   commands /start /quiz /leaderboard /myscore)
-- `.claude/skills/matriq-quiz/` — `SKILL.md`, `modes/` (telegram, quiz, html-rules),
+- `.claude/skills/matriq-quiz/` — `SKILL.md`, `verify.md`, `modes/` (telegram, quiz, html-rules),
   `history.json` (Telegram question history to avoid repeats)
 - `.claude/skills/matriq-fill-blank/`, `matriq-flashcards/`, `matriq-stepper/` — each has its own
   copy of `html-rules.md` (update all four copies when the page rules change)
+- `verify.md` (second-model answer verification) has identical copies in `matriq-quiz`,
+  `matriq-fill-blank`, and `matriq-flashcards`; update all three together
 - `.claude/skills/matriq-code/` — `runner.js` (JavaScript runner in a Web Worker, copied verbatim
   into each page); other languages have no runner (predict-the-output / find-the-bug with an answer key)
 - `.claude/skills/matriq-material/` — `modes/` (page, telegram) + `send_telegram.sh`
 - `docs/` — (optional) source documents for material/questions
+  (every skill has the same "Choosing from `docs/`" rules in its Content source section; update all together)
 - `output/` — generated files: daily quiz JSON/MD and HTML pages
 
 ## Flow
 - **Interactive:** `/matriq-<skill> topic: ...` → `output/<type>-YYYY-MM-DD-<topic>.html`
   → published as an artifact.
-- **Telegram daily quiz:** cron 07:00 → `claude -p "/matriq-quiz topik: ..." --allowedTools "Read,Write"`
+- **Telegram daily quiz:** cron 07:00 → `claude -p "/matriq-quiz topik: ..." --allowedTools "Read,Write,Agent"`
   → JSON → bot.py sends at 08:00 → answers recorded → /leaderboard
 
 ## Status
@@ -56,7 +65,6 @@ All skills: if the topic is missing, ask first (in headless runs: stop and repor
   upload the skills to claude.ai.
 
 ## Ideas
-- Answer verification by a second AI (AI sometimes gets the answer key wrong)
 - Adaptive difficulty based on scores
 - Rotating topic per day
 - Content from documents in `docs/`

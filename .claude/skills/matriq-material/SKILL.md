@@ -18,7 +18,7 @@ triggered in conversation). Indonesian keys (`topik:`, `bahasa:`, `jenjang:`, `k
 | `mode:` | `page`, `telegram`, `both` | see "Choosing the mode" |
 | `topic:` | any topic | none: ask first (see "Missing topic") |
 | `materi:` | pasted material text or an attached/referenced document | none |
-| `level:` | `SD`, `SMP`, `SMA`, `SMK`, `Mahasiswa`, `Profesional`, `Umum` | inferred from the request; `Umum` if unclear |
+| `level:` | `SD`, `SMP`, `SMA`, `SMK`, `Mahasiswa`, `Profesional`, `Umum` (English aliases below) | inferred from the request; `Umum` if unclear |
 | `lang:` | `id`, `en` | `id` |
 | `send:` | `yes`, `no` (telegram mode) | `yes` |
 
@@ -27,6 +27,10 @@ triggered in conversation). Indonesian keys (`topik:`, `bahasa:`, `jenjang:`, `k
    with the same content.
 2. Otherwise: if the request mentions Telegram, `send:`, or sending to the group → `telegram`.
 3. Otherwise → `page`.
+
+**Level aliases (English):** `elementary` = `SD`, `junior high` = `SMP`, `senior high` = `SMA`,
+`vocational` (or `vocational high`) = `SMK`, `university` (or `college`) = `Mahasiswa`,
+`professional` = `Profesional`, `general` = `Umum`. Treat them the same, whatever `lang:` is.
 
 Scheduled/cron runs that should post to the group must pass `mode: telegram`.
 
@@ -50,9 +54,25 @@ If there is no topic, no pasted material, and no attached/referenced document:
 - Variants such as `language: english` or `bahasa: inggris` mean `en`
 
 ## Content source
-- If the user pasted material or attached/referenced a document, summarize THAT material;
-  do not add facts that contradict it.
+- If the user pasted material or attached/referenced a document (including a path they name),
+  summarize THAT material; do not add facts that contradict it.
+- Otherwise, if a `docs/` folder with documents exists, choose from it (rules below).
 - Otherwise write from your own knowledge on the topic.
+
+**Choosing from `docs/`** (only when no document was named):
+- List the files. Skip hidden files and formats you cannot read (`.docx`, `.pptx`, `.xlsx`);
+  tell the user those need converting to PDF or Markdown.
+- Match the files to `topic:` by file name first. If the names do not settle it, read the start
+  of each candidate (the first page or about 50 lines).
+- One clear match: use it. Several matches: use all of them. No clear match: do not force a
+  document; use your own knowledge and say so in one line.
+- Live conversation and unclear (several unrelated candidates, or only a partial match): ask
+  which file to use before creating anything. Headless run: never ask; use the clear matches,
+  otherwise your own knowledge, and name what you used.
+- Content taken from `docs/` is based on those files only (same as a referenced document).
+  Read large PDFs in page ranges, only the parts relevant to the topic.
+- End the reply with one line naming the files used: `Sumber: docs/<file>`
+  (`lang: en`: `Source: docs/<file>`).
 
 ## Content quality (all modes)
 - Only state facts you are confident about; skip anything uncertain

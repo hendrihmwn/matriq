@@ -7,7 +7,8 @@ substantial**: every line teaches something.
 
 ## Inputs
 - Material: the document or text the user pasted (`materi:`), otherwise the `topic:`
-- `level:` (`jenjang:`) — `SD`, `SMP`, `SMA`, `SMK`, `Mahasiswa`, `Profesional`, or `Umum`.
+- `level:` (`jenjang:`) — `SD`, `SMP`, `SMA`, `SMK`, `Mahasiswa`, `Profesional`, or `Umum` (English aliases such as `elementary` or `university` are listed in
+  `SKILL.md`).
   If not given, infer it from the request (e.g. a school subject or class → that level,
   a workplace/technical topic → `Profesional`); if still unclear, use `Umum` (general
   adult reader). Match vocabulary, depth, and examples to the level

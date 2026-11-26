@@ -1,7 +1,7 @@
 ---
 name: matriq-code
 description: Create interactive coding exercises on any programming topic, as a self-contained HTML page with a code editor and an in-browser JavaScript runner (write code, fix the bug, predict the output) with test cases, hints, and a score. Use when asked for soal coding, latihan pemrograman, coding exercises, or a code runner.
-argument-hint: "topic: <topic> code: javascript|python|... count: <n> level: pemula|menengah|lanjut lang: id|en"
+argument-hint: "topic: <topic> code: javascript|python|... count: <n> level: pemula|menengah|lanjut lang: id|en verify: on|off"
 ---
 
 # MATRIQ Code (MAterial TRaining Quiz)
@@ -17,8 +17,12 @@ Read these keys from the arguments above (or from the user's message). Indonesia
 | `topic:` | a programming topic (e.g. array, loop, string, rekursi), or a document | none: ask first |
 | `code:` | programming language: `javascript`, `python`, `sql`, ... | `javascript` |
 | `count:` | number of exercises | 5 |
-| `level:` | `pemula`, `menengah`, `lanjut` | `pemula` |
+| `level:` | `pemula` (`beginner`), `menengah` (`intermediate`), `lanjut` (`advanced`) | `pemula` |
 | `lang:` | human language of instructions and UI: `id`, `en` | `id` |
+| `verify:` | `on`, `off` (skip running the answer keys) | `on` |
+
+**Level aliases:** the English names `beginner`, `intermediate`, and `advanced` mean `pemula`,
+`menengah`, and `lanjut`. Treat them the same, whatever `lang:` is.
 
 **Missing topic:** if there is no topic, pasted material, or document, ask the user what
 topic they want (and the programming language/level if it matters) and wait before
@@ -27,8 +31,24 @@ creating anything. In a non-interactive run, stop and report that a topic is req
 **Language:** `lang: id` → instructions, hints, explanations, and UI labels in Bahasa
 Indonesia; `lang: en` → English. Code identifiers and comments may stay in English.
 
-**Content source:** an attached/referenced document first (use only that document),
-otherwise a `docs/` folder if it has documents, otherwise your own knowledge.
+**Content source:** an attached/referenced document first (use only that document, including a
+path the user names), otherwise a `docs/` folder if it has documents (rules below), otherwise
+your own knowledge.
+
+**Choosing from `docs/`** (only when no document was named):
+- List the files. Skip hidden files and formats you cannot read (`.docx`, `.pptx`, `.xlsx`);
+  tell the user those need converting to PDF or Markdown.
+- Match the files to `topic:` by file name first. If the names do not settle it, read the start
+  of each candidate (the first page or about 50 lines).
+- One clear match: use it. Several matches: use all of them. No clear match: do not force a
+  document; use your own knowledge and say so in one line.
+- Live conversation and unclear (several unrelated candidates, or only a partial match): ask
+  which file to use before creating anything. Headless run: never ask; use the clear matches,
+  otherwise your own knowledge, and name what you used.
+- Content taken from `docs/` is based on those files only (same as a referenced document).
+  Read large PDFs in page ranges, only the parts relevant to the topic.
+- End the reply with one line naming the files used: `Sumber: docs/<file>`
+  (`lang: en`: `Source: docs/<file>`).
 
 ## What can run
 - **`code: javascript`** → exercises run for real in the browser. Copy `runner.js` from this
@@ -73,8 +93,7 @@ Data shape (one array at the top of the script):
 - Match difficulty to `level:` (pemula: variables, conditionals, loops, arrays, strings;
   menengah: objects, higher-order functions, recursion; lanjut: algorithms, closures,
   edge-case heavy tasks)
-- Before output, mentally run every reference solution against every test, and every
-  `predict` snippet, and confirm the expected values are exactly right
+- Before output, verify every answer key by running it (see "Answer verification by execution")
 - Tests must be deterministic (no randomness, dates, or timing) and synchronous
 - Test values must be JSON-serializable; for objects remember key order matters
 
@@ -95,3 +114,32 @@ Data shape (one array at the top of the script):
   tailored to the result, and a Restart button
 - Label code areas for screen readers, and keep the editor usable on a phone (full width,
   horizontal scroll inside the editor only)
+
+## Answer verification by execution
+Code has an advantage over text answers: the key can be run, so no second model is needed.
+Unless `verify: off`, do this after drafting and before writing the page. It applies to
+`code: javascript` (run with `node`), and to other languages only when their toolchain is
+installed (e.g. `python3`, `go run`, `javac` + `java`). Check with `which` first; a stub that
+prints "Unable to locate a Java Runtime" counts as not installed. Otherwise fall back to a
+careful mental run and say so in the report.
+
+1. Write a throwaway script outside `output/` (the scratchpad or a temp folder) that loads
+   the exercises' data and, for each exercise, checks:
+   - **write / bug:** the reference solution passes every test. Evaluate each test's `expr`
+     and compare with `expected` exactly as `runner.js` does (deep equality via
+     `JSON.stringify`, so key order matters)
+   - **write:** the starter code fails at least one test (no exercise is passed by default)
+   - **bug:** the buggy code fails at least one test before the fix
+   - **predict:** run the snippet, capture its printed output, and compare it with
+     `expectedOutput` after trimming each line and dropping empty trailing lines
+   - **bug (non-JavaScript, pick-the-line):** the buggy program fails (error, panic, or wrong
+     output) and the fixed program gives the correct output
+2. Run it with `node` (or the language's own tool). Any mismatch means the key is wrong: fix the key (or the code or
+   test), then run again. Do not ship an exercise that still fails its own check.
+3. Also confirm each test is deterministic: running the script twice gives the same result.
+4. Report one line in the final reply:
+   `Verifikasi: <n> soal dijalankan di <runtime>, <x> diperbaiki.`
+   (`lang: en`: `Verification: <n> exercises executed in <runtime>, <x> fixed.`)
+   If it could not be run: `Verifikasi: tidak dijalankan (tidak ada runtime), dicek manual.`
+
+Never write the check script or its output into the page.
